@@ -1,0 +1,14 @@
+Package: bstsTest
+Title: Rapidly Iterate & Test BSTS Models
+Version: 0.1
+Authors@R: person("Lissa", "Hyacinth", email = "lissahyacinth@gmail.com",
+                  role = c("aut", "cre"))
+Description: Creates a quick BSTS Model, returns predictors, predictions, MAPE, and RMSE.
+Depends: R (>= 3.1.0)
+License: MIT + file LICENSE
+LazyData: true
+Imports:
+  Metrics,
+  data.table,
+  bsts
+RoxygenNote: 6.0.1
