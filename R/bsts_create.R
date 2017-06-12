@@ -42,12 +42,11 @@ bsts_create = function(df,
   ### Remove NZV Variables ###
   column_variance = apply(cast_df[,2:ncol(cast_df)], function(x){
     if(length(x[x!=0 & !is.na(x)])/length(x) < 0.03){return(0)}
-    var((x - min(x, na.rm =T))/max(x-min(x, na.rm = T), na.rm =T), na.rm =T)
+    var((x - min(x[x!=0], na.rm =T))/max(x-min(x[x!=0], na.rm = T), na.rm =T), na.rm =T)
     }, MARGIN = 2)
   if(response %in% names(column_variance[column_variance <= 0.01])){
     stop("Response cannot have 0 variance.")
   }
-  
   cast_df = select_multi(cast_df, cols = colnames(cast_df)[!colnames(cast_df) %in% names(column_variance[column_variance <= 0.01 | is.na(column_variance)])])
   
   z_cast_df = eval(parse(text=paste0("zoo(cast_df$`", response, "`, cast_df$d_var)")))
@@ -55,7 +54,13 @@ bsts_create = function(df,
   ### STATE SPECIFICATION ####
   eval(parse(text=paste0("ss = AddLocalLevel(list(), cast_df$`", response, "`)")))
   ss <- bsts::AddLocalLinearTrend(ss, y = z_cast_df)
-  ss <- bsts::AddSeasonal(ss, y = z_cast_df, nseasons = nseasons)
+  if(length(nseasons) > 0){
+    for(seasons in 1:length(nseasons)){
+      ss <- bsts::AddSeasonal(ss, y = z_cast_df, nseasons = nseasons[seasons])          
+    }
+  }else{
+    ss <- bsts::AddSeasonal(ss, y = z_cast_df, nseasons = nseasons)
+  }
   ss <- bsts::AddAutoAr(ss, y = z_cast_df, lags = 50)
 
   ### PARAMETERS #####
