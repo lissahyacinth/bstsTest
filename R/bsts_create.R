@@ -42,6 +42,8 @@ bsts_create = function(df,
   ### Remove NZV Variables ###
   column_variance = apply(cast_df[,2:ncol(cast_df)], function(x){
     if(length(x[x!=0 & !is.na(x)])/length(x) < 0.03){return(0)}
+    # Removing outliers from the data to prevent variance being skewed during rescale. 
+    x = x[(x <= median(x) + 3*sd(x)) & (x >= median(x) - 3*sd(x))]
     var((x - min(x[x!=0], na.rm =T))/max(x-min(x[x!=0], na.rm = T), na.rm =T), na.rm =T)
     }, MARGIN = 2)
   if(response %in% names(column_variance[column_variance <= 0.01])){
