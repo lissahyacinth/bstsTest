@@ -6,5 +6,5 @@
 MAPE = function(actual, predicted){
   if(is.list(actual)){actual <- as.numeric(unlist(actual))}
   if(is.list(predicted)){predicted <- as.numeric(unlist(predicted))}
-  mean(abs((actual - predicted) / actual))
+  mean(abs((actual[actual!=0] - predicted[predicted!=0]) / actual[actual!=0]))
 }
