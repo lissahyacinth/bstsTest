@@ -34,6 +34,25 @@ bsts_test <- function(df = df,
   df = data.table::as.data.table(df)
   formatted_response = gsub(response, pattern = "`", replacement = "")
   
+  #Ensure DF matches requirements
+  if(class(df[,paste0(date_variable), with = FALSE][[1]]) != "Date"){
+    tryCatch({
+      df[,date_variable, with = FALSE] = as.Date(df[,paste0(date_variable), with = FALSE][[1]])
+    }, 
+    error = function(e){
+      stop(sprintf("Failed to convert Date column (%s) to a date.", date_variable))
+    })
+  }
+  if(class(df[,paste0(target_variable), with = FALSE][[1]]) != "numeric"){
+    tryCatch({
+      df[[target_variable]] = as.numeric(df[,paste0(target_variable), with = FALSE][[1]])
+    }, 
+    error = function(e){
+      stop(sprintf("Failed to convert Target Variable column (%s) to a numeric.", target_variable))
+    }
+    )
+  }
+  
   #Generate Initial, Test, and Validation Datasets
   eval(parse(
     text=paste0(
@@ -89,9 +108,9 @@ bsts_test <- function(df = df,
   for(X in 2:length(missing_preds)){
     init.col = missing_preds[X]
     new_row = data.frame(t_var = na_fill, 
-                         d_var = unique(new_df$d_var)[1], 
-                         g_var = gsub(init.col, pattern = "`", replacement = ""))
-    new_df = rbind(new_row, new_df)
+                         g_var = gsub(init.col, pattern = "`", replacement = ""), stringsAsFactors = F,
+                         d_var = unique(new_df$d_var)[1])
+    new_df = as.data.table(rbind(new_row, as.data.frame(new_df)))
   }
   
   cast_new_df = dcast(new_df[,

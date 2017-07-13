@@ -10,5 +10,6 @@ LazyData: true
 Imports:
   Metrics,
   data.table,
-  bsts
+  bsts,
+  zoo
 RoxygenNote: 6.0.1

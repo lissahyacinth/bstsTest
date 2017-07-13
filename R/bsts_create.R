@@ -12,7 +12,9 @@
 #' @param rebag_vars Create pseudo aggregate variable of other regressors
 #' @param inclusion_probability Minimum probability of inclusion in final model to show in returned predictors
 #' @return list object - bsts.model, data.frame of predictors
-#' @importFrom stats var
+#' @importFrom stats var sd median
+#' @importFrom bsts AddLocalLevel BstsOptions bsts 
+#' @importFrom zoo zoo
 
 bsts_create = function(df,
                        date_variable,
@@ -34,22 +36,24 @@ bsts_create = function(df,
                           by = c("d_var", "g_var")],
                   formula = d_var ~ g_var, fun.aggregate = sum, value.var = "t_var")
   
-  # Add Rebag for Existing
-  if(rebag_vars == TRUE){
-    cast_df$Rebag = rowSums(cast_df[, -c(1,unlist(as.list(1:ncol(cast_df))[colnames(cast_df) == response])),with = FALSE])
-  }
-  
-  ### Remove NZV Variables ###
+
+  ### Remove NZV Variables ####
   column_variance = apply(cast_df[,2:ncol(cast_df)], function(x){
-    if(length(x[x!=0 & !is.na(x)])/length(x) < 0.03){return(0)}
+    if(length(x[x!=0 & !is.na(x)])/length(x) < 0.60 | any(is.infinite(x))){return(0)}
     # Removing outliers from the data to prevent variance being skewed during rescale. 
-    x = x[(x <= median(x) + 3*sd(x)) & (x >= median(x) - 3*sd(x))]
-    var((x - min(x[x!=0], na.rm =T))/max(x-min(x[x!=0], na.rm = T), na.rm =T), na.rm =T)
+    x = x[(x <= median(x, na.rm=T) + 3*sd(x[!is.infinite(x)], na.rm = T)) & (x >= median(x, na.rm=T) - 3*sd(x[!is.infinite(x)], na.rm = T))]
+    var((x[!is.infinite(x)] - min(x[x!=0 & !is.infinite(x)], na.rm =T))/max(x[!is.infinite(x)]-min(x[x!=0 & !is.infinite(x)], na.rm = T), na.rm =T), na.rm =T)
     }, MARGIN = 2)
   if(response %in% names(column_variance[column_variance <= 0.01])){
     stop("Response cannot have 0 variance.")
   }
   cast_df = select_multi(cast_df, cols = colnames(cast_df)[!colnames(cast_df) %in% names(column_variance[column_variance <= 0.01 | is.na(column_variance)])])
+  
+  
+  # Add Rebag for Existing ####
+  if(rebag_vars == TRUE){
+    cast_df$Rebag = rowSums(cast_df[, -c(1,unlist(as.list(1:ncol(cast_df))[colnames(cast_df) == response])),with = FALSE])
+  }
   
   z_cast_df = eval(parse(text=paste0("zoo(cast_df$`", response, "`, cast_df$d_var)")))
   
