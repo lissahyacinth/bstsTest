@@ -6,7 +6,8 @@
 \usage{
 bsts_create(df, date_variable, response, nseasons, niter = 100,
   target_variable, group_variable, model.options = BstsOptions(),
-  rebag_vars = FALSE, inclusion_probability = 0.01)
+  rebag_vars = FALSE, rebag_mean_vars = FALSE,
+  inclusion_probability = 0.01)
 }
 \arguments{
 \item{df}{Dataframe}
@@ -26,6 +27,8 @@ bsts_create(df, date_variable, response, nseasons, niter = 100,
 \item{model.options}{Additional options for BSTS}
 
 \item{rebag_vars}{Create pseudo aggregate variable of other regressors}
+
+\item{rebag_mean_vars}{Create psuedo mean variable of other regressors}
 
 \item{inclusion_probability}{Minimum probability of inclusion in final model to show in returned predictors}
 }

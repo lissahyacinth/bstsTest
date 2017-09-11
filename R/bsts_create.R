@@ -10,6 +10,7 @@
 #' @param group_variable Column name indicating group names - will build into regressors
 #' @param model.options Additional options for BSTS
 #' @param rebag_vars Create pseudo aggregate variable of other regressors
+#' @param rebag_mean_vars Create psuedo mean variable of other regressors
 #' @param inclusion_probability Minimum probability of inclusion in final model to show in returned predictors
 #' @return list object - bsts.model, data.frame of predictors
 #' @importFrom stats var sd median
@@ -25,6 +26,7 @@ bsts_create = function(df,
                        group_variable,
                        model.options = BstsOptions(),
                        rebag_vars = FALSE,
+                       rebag_mean_vars = FALSE,
                        inclusion_probability = 0.01){
   
   eval(parse(text=(paste0("df_init = data.table::as.data.table(df)[,
@@ -55,6 +57,9 @@ bsts_create = function(df,
     cast_df$Rebag = rowSums(cast_df[, -c(1,unlist(as.list(1:ncol(cast_df))[colnames(cast_df) == response])),with = FALSE])
   }
   
+  if(rebag_mean_vars == TRUE){
+    cast_df$Rebag_Mean = rowMeans(cast_new_df[, -c(1,unlist(as.list(1:ncol(cast_new_df))[colnames(cast_new_df) == response])),with = FALSE])
+  }
   z_cast_df = eval(parse(text=paste0("zoo(cast_df$`", response, "`, cast_df$d_var)")))
   
   ### STATE SPECIFICATION ####
