@@ -33,6 +33,7 @@ x = bsts_test(df = bstsData,
               nseasons = 28,
               niter = 1000,
               rebag_vars = T,
+              rebag_mean_vars = T,
               inclusion_probability = 0.1)
 
 # Mean Absolute Percentage Error and Root Mean Square Error are now visible on a 14 day cross validation. 
@@ -41,3 +42,7 @@ x$MAPE
 x$RMSE
 > 1.438
 ```
+
+# Features
+Rebag is a way of aggregating small predictors into one big predictor. It's sometimes helpful, and sometimes a hinderance when there's strong correlation between rebag and some of your core predictors. It's likely to get an exclusion list at some point in the future when you need to test just *some* predictors. 
+Rebag comes in two forms - the aggregate sum, and the mean - I found adding the mean weakens the test case, but it can have some applications. 

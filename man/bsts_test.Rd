@@ -7,7 +7,7 @@
 bsts_test(df = df, validate_n = 20, date_variable, response, na_fill = 0,
   nseasons = 7, niter = 100, target_variable, group_variable,
   model.options = BstsOptions(), rebag_vars = FALSE,
-  inclusion_probability = 0.1)
+  rebag_mean_vars = FALSE, inclusion_probability = 0.1)
 }
 \arguments{
 \item{df}{Dataframe}
@@ -30,9 +30,11 @@ bsts_test(df = df, validate_n = 20, date_variable, response, na_fill = 0,
 
 \item{model.options}{- Any extra BSTS Options to add in using BstsOptions()}
 
-\item{rebag_vars}{- T/F - Add up all the other variables into an aggregate}
+\item{rebag_vars}{- T/F - Sum all variables into a new predictor.}
 
-\item{inclusion_probability}{Floor for including variable in model}
+\item{rebag_mean_vars}{- T/F Take the mean of all variables into a new prediction.}
+
+\item{inclusion_probability}{Floor for including variables in output - doesn't affect model right now.}
 }
 \description{
 Test a BSTS_Model - Highest Function level from bstsTest package

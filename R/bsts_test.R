@@ -11,8 +11,9 @@
 #' @param target_variable - Name of target variable column 
 #' @param group_variable - Name of column to group by 
 #' @param model.options - Any extra BSTS Options to add in using BstsOptions()
-#' @param rebag_vars - T/F - Add up all the other variables into an aggregate
-#' @param inclusion_probability Floor for including variable in model 
+#' @param rebag_vars - T/F - Sum all variables into a new predictor.
+#' @param rebag_mean_vars - T/F Take the mean of all variables into a new prediction.
+#' @param inclusion_probability Floor for including variables in output - doesn't affect model right now.
 #' @importFrom stats predict
 #' @importFrom Metrics rmse
 #' @importFrom data.table dcast
@@ -29,6 +30,7 @@ bsts_test <- function(df = df,
                       group_variable,
                       model.options = BstsOptions(),
                       rebag_vars = FALSE,
+                      rebag_mean_vars = FALSE,
                       inclusion_probability = 0.1){
   
   df = data.table::as.data.table(df)
@@ -121,6 +123,9 @@ bsts_test <- function(df = df,
   # Add Rebag for New Data
   if(rebag_vars == TRUE){
     cast_new_df$Rebag = rowSums(cast_new_df[, -c(1,unlist(as.list(1:ncol(cast_new_df))[colnames(cast_new_df) == response])),with = FALSE])
+  }
+  if(rebag_mean_vars == TRUE){
+    cast_new_df$Rebag_Mean = rowMeans(cast_new_df[, -c(1,unlist(as.list(1:ncol(cast_new_df))[colnames(cast_new_df) == response])),with = FALSE])
   }
   preds <- predict(model.list$bsts.model, newdata = cast_new_df)
   predictions = cbind(val_df, "Prediction" = preds$mean)
