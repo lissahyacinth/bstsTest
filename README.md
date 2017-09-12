@@ -46,3 +46,5 @@ x$RMSE
 # Features
 Rebag is a way of aggregating small predictors into one big predictor. It's sometimes helpful, and sometimes a hinderance when there's strong correlation between rebag and some of your core predictors. It's likely to get an exclusion list at some point in the future when you need to test just *some* predictors. 
 Rebag comes in two forms - the aggregate sum, and the mean - I found adding the mean weakens the test case, but it can have some applications. 
+
+Auto can be specified for nseasons instead of providing a seasonality. I find this works relatively well for rapid iteration testing, but is no replacement for actually calculating the seasonality yourself. 

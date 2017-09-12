@@ -6,7 +6,9 @@
 #' @param response Response variable name - will not accept lazy
 #' @param date_variable Name of date variable column - will not accept lazy
 #' @param na_fill - Fill for NA rows - defaults to 0 
-#' @param nseasons - Seasonality of data - defaults to 7
+#' @param nseasons - Seasonality of data - defaults to 7 - also takes "auto" to detect seasons automatically
+#' @param trend_type - If using auto for nseasons, specify what type of seasonality exists [multiplicative/additive]
+#' @param data_frequency - If using auto for nseasons, specify the frequency of the data. 
 #' @param niter - Iterations to run BSTS 
 #' @param target_variable - Name of target variable column 
 #' @param group_variable - Name of column to group by 
@@ -14,10 +16,11 @@
 #' @param rebag_vars - T/F - Sum all variables into a new predictor.
 #' @param rebag_mean_vars - T/F Take the mean of all variables into a new prediction.
 #' @param inclusion_probability Floor for including variables in output - doesn't affect model right now.
-#' @importFrom stats predict
+#' @importFrom stats predict decompose ts
 #' @importFrom Metrics rmse
 #' @importFrom data.table dcast
 #' @importFrom bsts BstsOptions
+#' @importFrom forecast findfrequency
 
 bsts_test <- function(df = df,
                       validate_n = 20, 
@@ -25,6 +28,8 @@ bsts_test <- function(df = df,
                       response,
                       na_fill = 0,
                       nseasons = 7,
+                      trend_type,
+                      data_frequency, 
                       niter = 100,
                       target_variable,
                       group_variable,
@@ -76,8 +81,23 @@ bsts_test <- function(df = df,
       date_variable, " %in% df[, .N, by = ", date_variable, "][order(", date_variable,")][,
       tail(",date_variable, ", validate_n)]]"))
     )  
-  #colnames(val_df)[3] = paste0("New_", colnames(val_df)[3])  
-  
+
+  # Generate seasonality of data if auto is specified
+  if(tolower(nseasons) == "auto") {
+    if(missing(trend_type)){
+      stop("Require a trend type [multiplicative,additive] for using auto seasons.")
+    }
+    if(missing(data_frequency)){
+      stop("Requires a frequency - try 12 for monthly data, 52 for weekly, and 365 for daily")
+    }
+    # Detrend the data 
+    all_data = ts(as.numeric(as.matrix(init_df)[as.matrix(init_df)[, 2] == formatted_response, ][, 3]), frequency = data_frequency)
+    decomposed_data = decompose(all_data, type = trend_type)
+    detrend_data = all_data-decomposed_data$trend
+    nseasons = findfrequency(detrend_data)
+      if(nseasons == 1){warning("Seasonality of 1 found, likely to be no seasonality")}
+  }
+
   #Generate BSTS Model
   model.list <- bsts_create(df = init_df,
                             date_variable = date_variable, 
@@ -88,7 +108,8 @@ bsts_test <- function(df = df,
                             inclusion_probability = inclusion_probability,
                             target_variable = target_variable, 
                             model.options = model.options, 
-                            rebag_vars = rebag_vars)
+                            rebag_vars = rebag_vars, 
+                            rebag_mean_vars = rebag_mean_vars)
   
   
   # Reshape New Data for input into the model

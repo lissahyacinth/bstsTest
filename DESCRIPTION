@@ -11,5 +11,6 @@ Imports:
   Metrics,
   data.table,
   bsts,
-  zoo
+  zoo, 
+  forecast
 RoxygenNote: 6.0.1

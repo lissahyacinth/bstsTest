@@ -5,8 +5,8 @@
 \title{Test a BSTS_Model - Highest Function level from bstsTest package}
 \usage{
 bsts_test(df = df, validate_n = 20, date_variable, response, na_fill = 0,
-  nseasons = 7, niter = 100, target_variable, group_variable,
-  model.options = BstsOptions(), rebag_vars = FALSE,
+  nseasons = 7, trend_type, data_frequency, niter = 100, target_variable,
+  group_variable, model.options = BstsOptions(), rebag_vars = FALSE,
   rebag_mean_vars = FALSE, inclusion_probability = 0.1)
 }
 \arguments{
@@ -20,7 +20,11 @@ bsts_test(df = df, validate_n = 20, date_variable, response, na_fill = 0,
 
 \item{na_fill}{- Fill for NA rows - defaults to 0}
 
-\item{nseasons}{- Seasonality of data - defaults to 7}
+\item{nseasons}{- Seasonality of data - defaults to 7 - also takes "auto" to detect seasons automatically}
+
+\item{trend_type}{- If using auto for nseasons, specify what type of seasonality exists [multiplicative/additive]}
+
+\item{data_frequency}{- If using auto for nseasons, specify the frequency of the data.}
 
 \item{niter}{- Iterations to run BSTS}
 

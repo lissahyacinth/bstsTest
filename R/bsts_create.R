@@ -58,18 +58,20 @@ bsts_create = function(df,
   }
   
   if(rebag_mean_vars == TRUE){
-    cast_df$Rebag_Mean = rowMeans(cast_new_df[, -c(1,unlist(as.list(1:ncol(cast_new_df))[colnames(cast_new_df) == response])),with = FALSE])
+    cast_df$Rebag_Mean = rowMeans(cast_df[, -c(1,unlist(as.list(1:ncol(cast_df))[colnames(cast_df) == response])),with = FALSE])
   }
   z_cast_df = eval(parse(text=paste0("zoo(cast_df$`", response, "`, cast_df$d_var)")))
   
   ### STATE SPECIFICATION ####
   eval(parse(text=paste0("ss = AddLocalLevel(list(), cast_df$`", response, "`)")))
   ss <- bsts::AddLocalLinearTrend(ss, y = z_cast_df)
+  # Remove seasonality of 1 from ss, as it causes an issue with BLAS. 
+  nseasons = nseasons[nseasons != 1]
   if(length(nseasons) > 0){
     for(seasons in 1:length(nseasons)){
       ss <- bsts::AddSeasonal(ss, y = z_cast_df, nseasons = nseasons[seasons])          
     }
-  }else{
+  }else if(length(nseasons) == 1L){
     ss <- bsts::AddSeasonal(ss, y = z_cast_df, nseasons = nseasons)
   }
   ss <- bsts::AddAutoAr(ss, y = z_cast_df, lags = 50)
